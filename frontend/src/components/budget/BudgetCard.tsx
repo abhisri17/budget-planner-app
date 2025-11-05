@@ -28,7 +28,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all ${
-              percentage > 90 ? 'bg-danger' : percentage > 70 ? 'bg-yellow-500' : 'bg-success'
+              percentage > 90 ? 'bg-red-500' : percentage > 70 ? 'bg-yellow-500' : 'bg-green-500'
             }`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />

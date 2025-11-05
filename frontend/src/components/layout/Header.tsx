@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
-    <header className="bg-primary text-white shadow-lg">
+    <header className="bg-blue-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Budget Planner Pro</h1>

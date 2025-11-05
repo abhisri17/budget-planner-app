@@ -33,7 +33,7 @@ const ExpenseTracker = ({ budgets, addExpense, expenses }: ExpenseTrackerProps) 
         <h2 className="text-2xl font-bold text-gray-800">Expense Tracker</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
         >
           + Add Expense
         </button>
@@ -78,7 +78,7 @@ const ExpenseTracker = ({ budgets, addExpense, expenses }: ExpenseTrackerProps) 
             <div className="flex gap-2">
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-success text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
               >
                 Save
               </button>

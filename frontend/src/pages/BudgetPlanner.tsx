@@ -78,7 +78,7 @@ const BudgetPlanner = () => {
                 onClick={() => setSelectedPeriod(period)}
                 className={`px-4 py-2 rounded-lg capitalize transition ${
                   selectedPeriod === period
-                    ? 'bg-primary text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -90,7 +90,7 @@ const BudgetPlanner = () => {
 
         <button
           onClick={() => setShowAddBudget(!showAddBudget)}
-          className="bg-success text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+          className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
         >
           + Add Budget
         </button>
@@ -127,7 +127,7 @@ const BudgetPlanner = () => {
           <div className="flex gap-4 mt-4">
             <button
               onClick={handleAddBudget}
-              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
             >
               Save Budget
             </button>
