@@ -1,47 +1,9 @@
 @import "tailwindcss";
 
-/* Your custom styles below */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb; /* Light background for banners visibility */
-  color: #111827; /* Text color */
 }
-
-/* Style buttons, links etc here */
-button {
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  padding: 0.5em 1em;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #2563eb;
-  color: #fff;
-  cursor: pointer;
-  transition: border-color 0.25s, background-color 0.25s;
-}
-
-button:hover {
-  border-color: #3b82f6;
-  background-color: #1d4ed8;
-}
-
-a {
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-a:hover {
-  color: #2563eb;
-}
-
-
-
-/* Use Tailwind utility classes in your components for font sizes */
-/* For example <h1 className="text-3xl font-bold">Banner</h1> */
