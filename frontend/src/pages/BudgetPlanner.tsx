@@ -5,14 +5,15 @@ import ExpenseTracker from '../components/budget/ExpenseTracker';
 
 const BudgetPlanner = () => {
   const [budgets, setBudgets] = useState<Budget[]>([
-    { id: '1', category: 'Food', amount: 5000, spent: 3200 },
-    { id: '2', category: 'Transportation', amount: 3000, spent: 1800 },
-    { id: '3', category: 'Entertainment', amount: 2000, spent: 1500 },
+    { id: '1', category: 'Food', amount: 5000, spent: 1500 },
+    { id: '2', category: 'Transportation', amount: 3000, spent: 639 },
+    { id: '3', category: 'Entertainment', amount: 2000, spent: 800 },
   ]);
 
   const [expenses, setExpenses] = useState<Expense[]>([
     { id: '1', description: 'Grocery Shopping', amount: 1500, category: 'Food', date: '2025-11-05' },
     { id: '2', description: 'Movie Tickets', amount: 800, category: 'Entertainment', date: '2025-11-04' },
+    { id: '3', description: 'Cab', amount: 639, category: 'Transportation', date: '2025-11-01' },
   ]);
 
   const [newBudget, setNewBudget] = useState({ category: '', amount: '' });
@@ -121,21 +122,9 @@ const BudgetPlanner = () => {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Total Budget - Editable */}
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 relative">
             <div className="flex justify-between items-start mb-1">
               <h3 className="text-sm font-medium text-gray-600">Total Budget</h3>
-              {!isEditingSummary && (
-                <button
-                  onClick={() => setIsEditingSummary(true)}
-                  className="text-blue-500 hover:text-blue-700 transition"
-                  title="Edit total budget"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-              )}
             </div>
             
             {isEditingSummary ? (
