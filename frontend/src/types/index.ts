@@ -1,21 +1,21 @@
 export interface Budget {
   id: string;
-  name: string;
+  // name: string;
   amount: number;
   spent: number;
   category: string;
-  period: 'monthly' | 'quarterly' | 'yearly';
-  startDate: Date;
-  endDate: Date;
+  // period: 'monthly' | 'quarterly' | 'yearly';
+  // startDate: Date;
+  // endDate: Date;
 }
 
 export interface Expense {
   id: string;
-  budgetId: string;
+  // budgetId: string;
   description: string;
   amount: number;
   category: string;
-  date: Date;
+  date: string;
 }
 
 export interface SIPCalculation {

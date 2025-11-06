@@ -66,7 +66,7 @@ const EMICalculator = () => {
 
         <button
           onClick={handleCalculate}
-          className="w-full bg-primary text-white py-3 rounded-lg hover:bg-blue-600 transition font-semibold"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-600 transition font-semibold"
         >
           Calculate EMI
         </button>

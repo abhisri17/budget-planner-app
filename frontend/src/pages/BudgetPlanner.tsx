@@ -1,157 +1,243 @@
 import { useState } from 'react';
-import type { Budget, Expense, PeriodType } from '../types';
+import type { Budget, Expense } from '../types';
 import BudgetCard from '../components/budget/BudgetCard';
 import ExpenseTracker from '../components/budget/ExpenseTracker';
 
 const BudgetPlanner = () => {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('monthly');
-  const [showAddBudget, setShowAddBudget] = useState(false);
+  const [budgets, setBudgets] = useState<Budget[]>([
+    { id: '1', category: 'Food', amount: 5000, spent: 1500 },
+    { id: '2', category: 'Transportation', amount: 3000, spent: 639 },
+    { id: '3', category: 'Entertainment', amount: 2000, spent: 800 },
+  ]);
 
-  const [newBudget, setNewBudget] = useState({
-    name: '',
-    amount: 0,
-    category: 'Food',
-  });
+  const [expenses, setExpenses] = useState<Expense[]>([
+    { id: '1', description: 'Grocery Shopping', amount: 1500, category: 'Food', date: '2025-11-05' },
+    { id: '2', description: 'Movie Tickets', amount: 800, category: 'Entertainment', date: '2025-11-04' },
+    { id: '3', description: 'Cab', amount: 639, category: 'Transportation', date: '2025-11-01' },
+  ]);
 
-  const categories = ['Food', 'Transport', 'Entertainment', 'Healthcare', 'Shopping', 'Bills', 'Others'];
+  const [newBudget, setNewBudget] = useState({ category: '', amount: '' });
+  const [isEditingSummary, setIsEditingSummary] = useState(false);
+  const [manualTotalBudget, setManualTotalBudget] = useState<number | null>(null);
+
+  // Calculate totals
+  const calculatedTotalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
+  const totalBudget = manualTotalBudget ?? calculatedTotalBudget;
+  const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+  const remainingBudget = totalBudget - totalSpent;
 
   const handleAddBudget = () => {
-    const budget: Budget = {
-      id: Date.now().toString(),
-      name: newBudget.name,
-      amount: newBudget.amount,
-      spent: 0,
-      category: newBudget.category,
-      period: selectedPeriod,
-      startDate: new Date(),
-      endDate: calculateEndDate(selectedPeriod),
-    };
-    setBudgets([...budgets, budget]);
-    setNewBudget({ name: '', amount: 0, category: 'Food' });
-    setShowAddBudget(false);
-  };
-
-  const calculateEndDate = (period: PeriodType): Date => {
-    const date = new Date();
-    switch (period) {
-      case 'monthly':
-        date.setMonth(date.getMonth() + 1);
-        break;
-      case 'quarterly':
-        date.setMonth(date.getMonth() + 3);
-        break;
-      case 'yearly':
-        date.setFullYear(date.getFullYear() + 1);
-        break;
+    if (newBudget.category && newBudget.amount) {
+      const budget: Budget = {
+        id: Date.now().toString(),
+        category: newBudget.category,
+        amount: parseFloat(newBudget.amount),
+        spent: 0,
+      };
+      setBudgets([...budgets, budget]);
+      setNewBudget({ category: '', amount: '' });
     }
-    return date;
   };
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
-    const newExpense: Expense = {
-      ...expense,
-      id: Date.now().toString(),
-    };
-    setExpenses([...expenses, newExpense]);
+  const handleUpdateBudget = (id: string, category: string, amount: number) => {
+    setBudgets(budgets.map(b => 
+      b.id === id ? { ...b, category, amount } : b
+    ));
+  };
+
+  const handleDeleteBudget = (id: string) => {
+    setBudgets(budgets.filter((b) => b.id !== id));
+  };
+
+  const handleAddExpense = (expense: Expense) => {
+    setExpenses([expense, ...expenses]);
     
     // Update budget spent amount
     setBudgets(budgets.map(b => 
-      b.id === expense.budgetId 
+      b.category === expense.category 
         ? { ...b, spent: b.spent + expense.amount }
         : b
     ));
   };
 
+  const handleUpdateExpense = (id: string, updatedExpense: Expense) => {
+    const oldExpense = expenses.find(e => e.id === id);
+    
+    if (oldExpense) {
+      // Update expense
+      setExpenses(expenses.map(e => e.id === id ? updatedExpense : e));
+      
+      // Adjust budget spent amounts
+      setBudgets(budgets.map(b => {
+        if (b.category === oldExpense.category && b.category === updatedExpense.category) {
+          // Same category - adjust the difference
+          return { ...b, spent: b.spent - oldExpense.amount + updatedExpense.amount };
+        } else if (b.category === oldExpense.category) {
+          // Old category - subtract old amount
+          return { ...b, spent: Math.max(0, b.spent - oldExpense.amount) };
+        } else if (b.category === updatedExpense.category) {
+          // New category - add new amount
+          return { ...b, spent: b.spent + updatedExpense.amount };
+        }
+        return b;
+      }));
+    }
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    const expense = expenses.find(e => e.id === id);
+    if (expense) {
+      setExpenses(expenses.filter(e => e.id !== id));
+      
+      // Update budget spent amount
+      setBudgets(budgets.map(b =>
+        b.category === expense.category
+          ? { ...b, spent: Math.max(0, b.spent - expense.amount) }
+          : b
+      ));
+    }
+  };
+
+  const handleSaveTotalBudget = (value: string) => {
+    const newTotal = parseFloat(value);
+    if (!isNaN(newTotal) && newTotal > 0) {
+      setManualTotalBudget(newTotal);
+      setIsEditingSummary(false);
+    }
+  };
+
+  const handleResetTotalBudget = () => {
+    setManualTotalBudget(null);
+    setIsEditingSummary(false);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Budget Planner</h1>
-        
-        <div className="flex gap-4 items-center mb-6">
-          <label className="font-semibold text-gray-700">Period:</label>
-          <div className="flex gap-2">
-            {(['monthly', 'quarterly', 'yearly'] as PeriodType[]).map(period => (
-              <button
-                key={period}
-                onClick={() => setSelectedPeriod(period)}
-                className={`px-4 py-2 rounded-lg capitalize transition ${
-                  selectedPeriod === period
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {period}
-              </button>
-            ))}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
+          <p className="text-gray-600">Track your expenses and manage your budgets effectively</p>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 relative">
+            <div className="flex justify-between items-start mb-1">
+              <h3 className="text-sm font-medium text-gray-600">Total Budget</h3>
+            </div>
+            
+            {isEditingSummary ? (
+              <div className="space-y-3">
+                <input
+                  type="number"
+                  defaultValue={totalBudget}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveTotalBudget((e.target as HTMLInputElement).value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-2xl font-bold border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      const input = e.currentTarget.parentElement?.previousElementSibling as HTMLInputElement;
+                      handleSaveTotalBudget(input.value);
+                    }}
+                    className="flex-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleResetTotalBudget}
+                    className="flex-1 px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                  >
+                    Reset
+                  </button>
+                </div>
+                {manualTotalBudget !== null && (
+                  <p className="text-xs text-gray-500">Auto-calculated: ₹{calculatedTotalBudget.toLocaleString()}</p>
+                )}
+              </div>
+            ) : (
+              <>
+                <p className="text-3xl font-bold text-gray-900">₹{totalBudget.toLocaleString()}</p>
+                {manualTotalBudget !== null && (
+                  <p className="text-xs text-gray-500 mt-1">(Custom value)</p>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Total Spent */}
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Spent</h3>
+            <p className="text-3xl font-bold text-gray-900">₹{totalSpent.toLocaleString()}</p>
+          </div>
+
+          {/* Remaining */}
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Remaining</h3>
+            <p className="text-3xl font-bold text-gray-900">₹{remainingBudget.toLocaleString()}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {((remainingBudget / totalBudget) * 100).toFixed(1)}% remaining
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowAddBudget(!showAddBudget)}
-          className="bg-success text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
-        >
-          + Add Budget
-        </button>
-      </div>
-
-      {showAddBudget && (
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-          <h3 className="text-xl font-bold mb-4">Create New Budget</h3>
-          <div className="grid md:grid-cols-3 gap-4">
+        {/* Add Budget Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Add New Budget</h2>
+          <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
-              placeholder="Budget Name"
-              value={newBudget.name}
-              onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
-              className="border rounded-lg px-4 py-2"
+              placeholder="Category (e.g., Food, Transport)"
+              value={newBudget.category}
+              onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="number"
               placeholder="Amount"
-              value={newBudget.amount || ''}
-              onChange={(e) => setNewBudget({ ...newBudget, amount: Number(e.target.value) })}
-              className="border rounded-lg px-4 py-2"
+              value={newBudget.amount}
+              onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <select
-              value={newBudget.category}
-              onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
-              className="border rounded-lg px-4 py-2"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-4 mt-4">
             <button
               onClick={handleAddBudget}
-              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
             >
-              Save Budget
-            </button>
-            <button
-              onClick={() => setShowAddBudget(false)}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition"
-            >
-              Cancel
+              Add Budget
             </button>
           </div>
         </div>
-      )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {budgets
-          .filter(b => b.period === selectedPeriod)
-          .map(budget => (
-            <BudgetCard key={budget.id} budget={budget} />
-          ))}
+        {/* Budget Cards Grid */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Budgets</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {budgets.map((budget) => (
+              <BudgetCard 
+                key={budget.id} 
+                budget={budget} 
+                onDelete={handleDeleteBudget}
+                onUpdate={handleUpdateBudget}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Expense Tracker */}
+        <ExpenseTracker
+          expenses={expenses}
+          budgets={budgets}
+          onAddExpense={handleAddExpense}
+          onUpdateExpense={handleUpdateExpense}
+          onDeleteExpense={handleDeleteExpense}
+        />
       </div>
-
-      {budgets.length > 0 && (
-        <ExpenseTracker budgets={budgets} addExpense={addExpense} expenses={expenses} />
-      )}
     </div>
   );
 };
