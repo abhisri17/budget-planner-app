@@ -30,7 +30,7 @@ const InvestmentPlanner: React.FC = () => {
 
       {/* Footer Info */}
       <div className="text-center text-sm text-gray-500 pt-4">
-        <p>Based on the Ankur Warikoo Investment Calculator methodology</p>
+        <p>Based on the Abhinav Srivastava Investment Calculator methodology</p>
       </div>
     </div>
   );
