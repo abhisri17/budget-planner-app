@@ -1,6 +1,11 @@
 // src/utils/investmentCalculations.ts
 
-import type { InvestmentInputs, MonthlyCalculation, ReturnScenario, InvestmentResults } from '../types/investment.types';
+import type { 
+  InvestmentInputs, 
+  MonthlyCalculation, 
+  ReturnScenario, 
+  InvestmentResults 
+} from '../types/investment.types';
 
 export class InvestmentCalculator {
   private inputs: InvestmentInputs;
@@ -9,6 +14,22 @@ export class InvestmentCalculator {
   constructor(inputs: InvestmentInputs) {
     this.inputs = inputs;
     this.totalMonths = (inputs.retirementAge - inputs.currentAge) * 12;
+  }
+
+  /**
+   * Validate if inputs are sufficient for calculations
+   */
+  private isValidInput(): boolean {
+    const { currentAge, retirementAge, monthlyContribution, yearlyIncrease, inflation } = this.inputs;
+    
+    return (
+      currentAge > 0 &&
+      retirementAge > currentAge &&
+      monthlyContribution > 0 &&
+      yearlyIncrease >= 0 &&
+      inflation >= 0 &&
+      this.totalMonths > 0
+    );
   }
 
   /**
@@ -38,6 +59,8 @@ export class InvestmentCalculator {
     const monthlyRate = annualReturnRate / 12;
     const remainingMonths = this.totalMonths - month;
     
+    if (remainingMonths < 0) return contribution;
+    
     return contribution * Math.pow(1 + monthlyRate, remainingMonths);
   }
 
@@ -49,6 +72,8 @@ export class InvestmentCalculator {
     const monthlyInflation = this.inputs.inflation / 12;
     const remainingMonths = this.totalMonths - month;
     
+    if (remainingMonths < 0) return fv;
+    
     return fv / Math.pow(1 + monthlyInflation, remainingMonths);
   }
 
@@ -56,6 +81,11 @@ export class InvestmentCalculator {
    * Calculate investment projection for a specific return rate
    */
   public calculateForReturnRate(annualReturnRate: number): MonthlyCalculation[] {
+    // Return empty array if inputs are invalid
+    if (!this.isValidInput()) {
+      return [];
+    }
+
     const calculations: MonthlyCalculation[] = [];
     let cumulativeFV = 0;
     let cumulativeNPV = 0;
@@ -86,6 +116,16 @@ export class InvestmentCalculator {
    * Calculate all scenarios (different return rates)
    */
   public calculateAllScenarios(): InvestmentResults {
+    // Return default values if inputs are invalid
+    if (!this.isValidInput()) {
+      return {
+        totalMonths: 0,
+        investmentPeriod: 0,
+        scenarios: [],
+        monthlyData: new Map(),
+      };
+    }
+
     const returnScenarios = [
       { rate: 0.05, label: '5% - FD returns' },
       { rate: 0.10, label: '10% - Gold returns' },
@@ -102,6 +142,22 @@ export class InvestmentCalculator {
 
     returnScenarios.forEach(({ rate, label }) => {
       const calculations = this.calculateForReturnRate(rate);
+      
+      // CRITICAL FIX: Check if calculations array has data before accessing lastMonth
+      if (calculations.length === 0) {
+        // If no calculations, add scenario with zero values
+        scenarios.push({
+          returnRate: rate,
+          label,
+          totalFV: 0,
+          totalNPV: 0,
+          valueInCrores: 0,
+        });
+        monthlyData.set(rate, []);
+        return; // Skip to next iteration
+      }
+
+      // Now it's safe to access the last element
       const lastMonth = calculations[calculations.length - 1];
 
       scenarios.push({
@@ -127,6 +183,10 @@ export class InvestmentCalculator {
    * Get yearly summary (showing contribution for each year)
    */
   public getYearlySummary(): Array<{ year: number; monthlyContribution: number }> {
+    if (!this.isValidInput()) {
+      return [];
+    }
+
     const years = Math.ceil(this.totalMonths / 12);
     const summary = [];
 
@@ -144,6 +204,10 @@ export class InvestmentCalculator {
 
 // Helper function to format currency
 export const formatCurrency = (amount: number): string => {
+  if (!isFinite(amount) || isNaN(amount)) {
+    return '₹0';
+  }
+  
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -153,5 +217,9 @@ export const formatCurrency = (amount: number): string => {
 
 // Helper function to format crores
 export const formatCrores = (amount: number): string => {
+  if (!isFinite(amount) || isNaN(amount)) {
+    return '0.00';
+  }
+  
   return amount.toFixed(2);
 };
