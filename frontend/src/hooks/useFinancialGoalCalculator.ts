@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import type { AssumptionInputs, Goal, FinancialPlanResults } from '../types/financialGoal.types';
 import { FinancialGoalCalculator } from '../utils/financialGoalCalculations';
 
-// Default goals based on Excel
 const defaultGoals: Goal[] = [
   { id: '1', name: 'Emergency Fund', amount: 300000, years: 1, valueAtTime: 0, category: 'short' },
   { id: '2', name: 'Vacation every year', amount: 50000, years: 1, valueAtTime: 0, category: 'short' },
@@ -30,15 +29,14 @@ export const useFinancialGoalCalculator = () => {
   const [startingSalary, setStartingSalary] = useState<number>(600000);
   const [goals, setGoals] = useState<Goal[]>(defaultGoals);
 
-  // Calculate results (removed wantsInvestmentPercentage parameter)
   const results = useMemo<FinancialPlanResults>(() => {
     const calculator = new FinancialGoalCalculator(
       assumptions,
       startingSalary,
       goals
+      // No 50% parameter - investing 100% of wants
     );
 
-    // Update goals with calculated values
     const updatedGoals = calculator.calculateGoalValues(goals);
     if (JSON.stringify(updatedGoals) !== JSON.stringify(goals)) {
       setGoals(updatedGoals);

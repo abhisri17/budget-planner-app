@@ -67,3 +67,21 @@ export interface BudgetYear {
   wantsPercentage: number;
   investmentsPercentage: number;
 }
+
+// src/types/financialGoal.types.ts
+
+export interface CashFlowYear {
+  year: number;
+  wantsAmount: number;              // Accumulated wants AFTER goal withdrawal
+  investmentAmount: number;          // Accumulated investments AFTER goal withdrawal
+  amountNeededFromWant: number;      // Total goals amount needed this year
+  amountNeededFromInvestment: number; // Amount withdrawn from investments
+  canMeetGoals: boolean;             // Can total wealth cover goals?
+  
+  // NEW: Add these for better tracking
+  wantsBeforeGoals?: number;         // Wants before withdrawal (for display)
+  investmentsBeforeGoals?: number;   // Investments before withdrawal (for display)
+  goalsThisYear?: number;            // Total goals due this year
+  amountFromWants?: number;          // What was withdrawn from wants
+  amountFromInvestments?: number;    // What was withdrawn from investments
+}

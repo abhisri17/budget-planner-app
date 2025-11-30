@@ -14,7 +14,6 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
   
   const displayData = showAllYears ? cashFlowData : cashFlowData.slice(0, 10);
 
-  // Create a map of goals by year
   const goalsByYear = goals.reduce((acc, goal) => {
     if (!acc[goal.years]) acc[goal.years] = [];
     acc[goal.years].push(goal);
@@ -30,36 +29,43 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
           <thead>
             <tr className="border-b-2 border-gray-200">
               <th className="text-left py-3 px-2 font-semibold text-gray-700">Year</th>
-              <th className="text-right py-3 px-2 font-semibold text-gray-700">Wants Amount</th>
-              <th className="text-right py-3 px-2 font-semibold text-gray-700">Investment Amount</th>
-              <th className="text-right py-3 px-2 font-semibold text-gray-700">Total Wealth</th>
-              <th className="text-left py-3 px-2 font-semibold text-gray-700">Goals This Year</th>
-              <th className="text-right py-3 px-2 font-semibold text-gray-700">Amount Needed</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">Wants (Before)</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">Investments (Before)</th>
+              <th className="text-left py-3 px-2 font-semibold text-gray-700">Goals</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">From Wants</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">From Investments</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">Wants (After)</th>
+              <th className="text-right py-3 px-2 font-semibold text-gray-700">Investments (After)</th>
               <th className="text-center py-3 px-2 font-semibold text-gray-700">Status</th>
             </tr>
           </thead>
           <tbody>
             {displayData.map((yearData) => {
               const goalsThisYear = goalsByYear[yearData.year] || [];
-              const totalWealth = yearData.wantsAmount + yearData.investmentAmount;
+              const hasGoals = goalsThisYear.length > 0;
               
               return (
                 <tr
                   key={yearData.year}
                   className={`border-b border-gray-100 hover:bg-gray-50 transition ${
-                    goalsThisYear.length > 0 ? 'bg-purple-50' : ''
+                    hasGoals ? 'bg-purple-50' : ''
                   }`}
                 >
                   <td className="py-3 px-2 font-medium">{yearData.year}</td>
-                  <td className="text-right py-3 px-2">{formatCurrency(yearData.wantsAmount)}</td>
-                  <td className="text-right py-3 px-2 text-blue-600 font-medium">
-                    {formatCurrency(yearData.investmentAmount)}
+                  
+                  {/* Wants Before Goals */}
+                  <td className="text-right py-3 px-2 text-purple-600">
+                    {formatCurrency(yearData.wantsBeforeGoals || 0)}
                   </td>
-                  <td className="text-right py-3 px-2 font-bold text-green-600">
-                    {formatCurrency(totalWealth)}
+                  
+                  {/* Investments Before Goals */}
+                  <td className="text-right py-3 px-2 text-blue-600">
+                    {formatCurrency(yearData.investmentsBeforeGoals || 0)}
                   </td>
+                  
+                  {/* Goals This Year */}
                   <td className="py-3 px-2">
-                    {goalsThisYear.length > 0 ? (
+                    {hasGoals ? (
                       <div className="text-xs space-y-1">
                         {goalsThisYear.map(goal => (
                           <div key={goal.id} className="flex items-center">
@@ -67,25 +73,53 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
                             <span className="font-medium">{goal.name}</span>
                           </div>
                         ))}
+                        <div className="font-semibold text-red-600 mt-1">
+                          Total: {formatCurrency(yearData.goalsThisYear || 0)}
+                        </div>
                       </div>
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
+                  
+                  {/* Amount From Wants */}
                   <td className="text-right py-3 px-2">
-                    {yearData.amountNeededFromWant > 0 ? (
-                      <span className="font-semibold text-red-600">
-                        {formatCurrency(yearData.amountNeededFromWant)}
+                    {(yearData.amountFromWants || 0) > 0 ? (
+                      <span className="text-red-600 font-semibold">
+                        -{formatCurrency(yearData.amountFromWants || 0)}
                       </span>
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
+                  
+                  {/* Amount From Investments */}
+                  <td className="text-right py-3 px-2">
+                    {(yearData.amountFromInvestments || 0) > 0 ? (
+                      <span className="text-red-600 font-semibold">
+                        -{formatCurrency(yearData.amountFromInvestments || 0)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                  
+                  {/* Wants After Goals */}
+                  <td className="text-right py-3 px-2 font-bold text-purple-600">
+                    {formatCurrency(yearData.wantsAmount)}
+                  </td>
+                  
+                  {/* Investments After Goals */}
+                  <td className="text-right py-3 px-2 font-bold text-blue-600">
+                    {formatCurrency(yearData.investmentAmount)}
+                  </td>
+                  
+                  {/* Status */}
                   <td className="text-center py-3 px-2">
-                    {goalsThisYear.length > 0 && (
+                    {hasGoals && (
                       yearData.canMeetGoals ? (
                         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                          ✓ Achievable
+                          ✓ Met
                         </span>
                       ) : (
                         <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
@@ -112,21 +146,22 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
         </div>
       )}
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Cards */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-purple-50 rounded-lg">
-          <p className="text-sm text-gray-600">Final Wants Amount</p>
+          <p className="text-sm text-gray-600">Final Wants Balance</p>
           <p className="text-xl font-bold text-purple-600">
             {formatCrores(cashFlowData[cashFlowData.length - 1]?.wantsAmount || 0)}
           </p>
         </div>
         <div className="p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-gray-600">Final Investment Amount</p>
+          <p className="text-sm text-gray-600">Final Investment Balance</p>
           <p className="text-xl font-bold text-blue-600">
             {formatCrores(cashFlowData[cashFlowData.length - 1]?.investmentAmount || 0)}
           </p>
         </div>
         <div className="p-4 bg-green-50 rounded-lg">
-          <p className="text-sm text-gray-600">Total Accumulated Wealth</p>
+          <p className="text-sm text-gray-600">Total Remaining Wealth</p>
           <p className="text-xl font-bold text-green-600">
             {formatCrores(
               (cashFlowData[cashFlowData.length - 1]?.wantsAmount || 0) +
@@ -134,6 +169,14 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
             )}
           </p>
         </div>
+      </div>
+
+      <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+        <p className="text-sm text-yellow-800">
+          <strong>💡 How it works:</strong> Each year, wealth grows with new contributions (20% wants + 30% investments) 
+          and 12% returns. When goals are due, amounts are withdrawn first from Wants, then from Investments. 
+          The reduced balance carries forward to the next year. 100% of wants budget is invested.
+        </p>
       </div>
     </div>
   );

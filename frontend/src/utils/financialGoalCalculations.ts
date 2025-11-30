@@ -28,7 +28,6 @@ export class FinancialGoalCalculator {
 
   /**
    * Calculate future value with inflation
-   * Formula: Amount × (1 + Inflation)^Years
    */
   public calculateGoalValue(amount: number, years: number): number {
     if (!amount || years <= 0) return 0;
@@ -54,58 +53,46 @@ export class FinancialGoalCalculator {
 
   /**
    * Calculate Budget sheet data (30 years projection)
-   * NEW ALLOCATION: 50% Needs, 20% Wants, 30% Investments
    */
   public calculateBudget(): BudgetYear[] {
     const budget: BudgetYear[] = [];
     
-    // Updated allocation percentages
-    const initialNeeds = 0.5;        // Changed from 0.6 to 0.5
-    const initialWants = 0.2;        // Same
-    const initialInvestments = 0.3;  // Changed from 0.2 to 0.3
+    const initialNeeds = 0.5;
+    const initialWants = 0.2;
+    const initialInvestments = 0.3;
 
     for (let year = 1; year <= this.planningYears; year++) {
       let startingSalary: number;
       const jobChange = this.isJobChangeYear(year);
 
       if (year === 1) {
-        // Year 1: Starting salary is 0, ending salary is input
         startingSalary = 0;
       } else {
         startingSalary = budget[year - 2].endingSalary;
       }
 
-      // Calculate increment based on job change
       const incrementRate = jobChange 
         ? this.assumptions.jobChangeIncrement 
         : this.assumptions.annualIncrement;
       
       const increment = year === 1 ? 0 : incrementRate * startingSalary;
-      
-      // Calculate ending salary
-      const endingSalary = year === 1 
-        ? this.startingSalary 
-        : startingSalary + increment;
+      const endingSalary = year === 1 ? this.startingSalary : startingSalary + increment;
 
-      // Calculate monthly allocations
       let monthlyNeeds: number;
       let monthlyWants: number;
       let monthlyInvestments: number;
 
       if (year === 1) {
-        // Year 1 uses initial percentages
         monthlyNeeds = (this.startingSalary / 12) * initialNeeds;
         monthlyWants = (this.startingSalary / 12) * initialWants;
         monthlyInvestments = (this.startingSalary / 12) * initialInvestments;
       } else {
-        // Subsequent years: add increment portion to each category
         const prevYear = budget[year - 2];
         monthlyNeeds = prevYear.monthlyNeeds + (increment * initialNeeds) / 12;
         monthlyWants = prevYear.monthlyWants + (increment * initialWants) / 12;
         monthlyInvestments = prevYear.monthlyInvestments + (increment * initialInvestments) / 12;
       }
 
-      // Calculate percentages
       const monthlySalary = endingSalary / 12;
       const needsPercentage = monthlySalary > 0 ? monthlyNeeds / monthlySalary : 0;
       const wantsPercentage = monthlySalary > 0 ? monthlyWants / monthlySalary : 0;
@@ -130,8 +117,8 @@ export class FinancialGoalCalculator {
   }
 
   /**
-   * Calculate Cash Flow sheet data
-   * SIMPLIFIED: All wants amount is invested (no separate percentage)
+   * Calculate Cash Flow with PROPER GOAL DEDUCTION
+   * 100% of wants invested, goals deducted from wealth
    */
   public calculateCashFlow(budgetData: BudgetYear[]): CashFlowYear[] {
     const cashFlow: CashFlowYear[] = [];
@@ -141,45 +128,80 @@ export class FinancialGoalCalculator {
     for (let year = 1; year <= this.planningYears; year++) {
       const budgetYear = budgetData[year - 1];
 
-      // Calculate wants amount with investment returns
-      // All wants are invested (100% of wants amount)
+      // Step 1: Add this year's contributions
+      const yearlyWantsContribution = budgetYear.monthlyWants * 12;
+      const yearlyInvestmentContribution = budgetYear.monthlyInvestments * 12;
+
+      // Step 2: Add contributions and apply investment returns
       if (year === 1) {
-        accumulatedWants = 
-          budgetYear.monthlyWants * 12 * 
-          (1 + this.assumptions.investmentReturns);
+        // Year 1: 100% of wants invested (not 50%)
+        accumulatedWants = yearlyWantsContribution * (1 + this.assumptions.investmentReturns);
+        accumulatedInvestments = yearlyInvestmentContribution * (1 + this.assumptions.investmentReturns);
       } else {
-        accumulatedWants = 
-          (accumulatedWants + budgetYear.monthlyWants * 12) * 
-          (1 + this.assumptions.investmentReturns);
+        // Subsequent years: (Previous + New Contribution) * (1 + Returns)
+        accumulatedWants = (accumulatedWants + yearlyWantsContribution) * (1 + this.assumptions.investmentReturns);
+        accumulatedInvestments = (accumulatedInvestments + yearlyInvestmentContribution) * (1 + this.assumptions.investmentReturns);
       }
 
-      // Calculate investment amount with returns
-      if (year === 1) {
-        accumulatedInvestments = 
-          budgetYear.monthlyInvestments * 12 * 
-          (1 + this.assumptions.investmentReturns);
-      } else {
-        accumulatedInvestments = 
-          (accumulatedInvestments + budgetYear.monthlyInvestments * 12) * 
-          (1 + this.assumptions.investmentReturns);
-      }
+      // Store values BEFORE goal withdrawal
+      const wantsBeforeGoals = accumulatedWants;
+      const investmentsBeforeGoals = accumulatedInvestments;
+      const totalWealthBeforeGoals = wantsBeforeGoals + investmentsBeforeGoals;
 
-      // Calculate amount needed from wants for this year's goals
+      // Step 3: Calculate goals due this year
       const goalsThisYear = this.goals.filter(g => g.years === year);
-      const amountNeededFromWant = goalsThisYear.reduce((sum, goal) => sum + goal.valueAtTime, 0);
+      const totalGoalsAmount = goalsThisYear.reduce((sum, goal) => sum + goal.valueAtTime, 0);
 
-      // Check if wealth can meet the goals
-      const amountNeededFromInvestment = Math.max(0, amountNeededFromWant - accumulatedWants);
-      const canMeetGoals = (accumulatedWants + accumulatedInvestments) >= amountNeededFromWant;
+      // Step 4: Deduct goals from wealth (Wants first, then Investments)
+      let remainingGoalAmount = totalGoalsAmount;
+      let amountFromWants = 0;
+      let amountFromInvestments = 0;
 
+      if (remainingGoalAmount > 0) {
+        // First, try to deduct from Wants
+        if (accumulatedWants >= remainingGoalAmount) {
+          // Wants can cover it all
+          amountFromWants = remainingGoalAmount;
+          accumulatedWants -= remainingGoalAmount;
+          remainingGoalAmount = 0;
+        } else {
+          // Use all Wants, then take from Investments
+          amountFromWants = accumulatedWants;
+          remainingGoalAmount -= accumulatedWants;
+          accumulatedWants = 0;
+
+          // Now deduct remainder from Investments
+          if (accumulatedInvestments >= remainingGoalAmount) {
+            amountFromInvestments = remainingGoalAmount;
+            accumulatedInvestments -= remainingGoalAmount;
+            remainingGoalAmount = 0;
+          } else {
+            // Not enough wealth (shortfall)
+            amountFromInvestments = accumulatedInvestments;
+            accumulatedInvestments = 0;
+            // remainingGoalAmount > 0 means shortfall
+          }
+        }
+      }
+
+      const canMeetGoals = remainingGoalAmount === 0;
+
+      // Step 5: Store the cash flow data
       cashFlow.push({
         year,
-        wantsAmount: accumulatedWants,
-        investmentAmount: accumulatedInvestments,
-        amountNeededFromWant,
-        amountNeededFromInvestment,
+        wantsAmount: accumulatedWants, // AFTER deduction
+        investmentAmount: accumulatedInvestments, // AFTER deduction
+        amountNeededFromWant: totalGoalsAmount,
+        amountNeededFromInvestment: amountFromInvestments,
         canMeetGoals,
+        wantsBeforeGoals,
+        investmentsBeforeGoals,
+        goalsThisYear: totalGoalsAmount,
+        amountFromWants,
+        amountFromInvestments,
       });
+
+      // Next year will use the REDUCED balances (after goal withdrawal)
     }
 
     return cashFlow;
@@ -207,7 +229,7 @@ export class FinancialGoalCalculator {
   }
 }
 
-// Helper functions remain the same
+// Helper functions
 export const formatCurrency = (amount: number): string => {
   if (!isFinite(amount) || isNaN(amount)) return '₹0';
   
