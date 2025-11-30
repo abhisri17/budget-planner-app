@@ -12,20 +12,17 @@ export class FinancialGoalCalculator {
   private assumptions: AssumptionInputs;
   private startingSalary: number;
   private goals: Goal[];
-  private wantsInvestmentPercentage: number;
   private planningYears: number;
 
   constructor(
     assumptions: AssumptionInputs,
     startingSalary: number,
     goals: Goal[],
-    wantsInvestmentPercentage: number = 0.5,
     planningYears: number = 30
   ) {
     this.assumptions = assumptions;
     this.startingSalary = startingSalary;
     this.goals = goals;
-    this.wantsInvestmentPercentage = wantsInvestmentPercentage;
     this.planningYears = planningYears;
   }
 
@@ -49,31 +46,36 @@ export class FinancialGoalCalculator {
   }
 
   /**
+   * Check if a year has a job change
+   */
+  private isJobChangeYear(year: number): boolean {
+    return this.assumptions.jobChangeYears.includes(year);
+  }
+
+  /**
    * Calculate Budget sheet data (30 years projection)
+   * NEW ALLOCATION: 50% Needs, 20% Wants, 30% Investments
    */
   public calculateBudget(): BudgetYear[] {
     const budget: BudgetYear[] = [];
     
-    // Initial allocation percentages
-    const initialNeeds = 0.6;
-    const initialWants = 0.2;
-    const initialInvestments = 0.2;
+    // Updated allocation percentages
+    const initialNeeds = 0.5;        // Changed from 0.6 to 0.5
+    const initialWants = 0.2;        // Same
+    const initialInvestments = 0.3;  // Changed from 0.2 to 0.3
 
     for (let year = 1; year <= this.planningYears; year++) {
       let startingSalary: number;
-      let jobChange = false;
+      const jobChange = this.isJobChangeYear(year);
 
       if (year === 1) {
         // Year 1: Starting salary is 0, ending salary is input
         startingSalary = 0;
       } else {
         startingSalary = budget[year - 2].endingSalary;
-        
-        // Job changes in years 9, 14, 21, 27 (based on Excel pattern)
-        jobChange = [9, 14, 21, 27].includes(year);
       }
 
-      // Calculate increment
+      // Calculate increment based on job change
       const incrementRate = jobChange 
         ? this.assumptions.jobChangeIncrement 
         : this.assumptions.annualIncrement;
@@ -129,6 +131,7 @@ export class FinancialGoalCalculator {
 
   /**
    * Calculate Cash Flow sheet data
+   * SIMPLIFIED: All wants amount is invested (no separate percentage)
    */
   public calculateCashFlow(budgetData: BudgetYear[]): CashFlowYear[] {
     const cashFlow: CashFlowYear[] = [];
@@ -139,13 +142,14 @@ export class FinancialGoalCalculator {
       const budgetYear = budgetData[year - 1];
 
       // Calculate wants amount with investment returns
+      // All wants are invested (100% of wants amount)
       if (year === 1) {
         accumulatedWants = 
-          budgetYear.monthlyWants * 12 * this.wantsInvestmentPercentage * 
+          budgetYear.monthlyWants * 12 * 
           (1 + this.assumptions.investmentReturns);
       } else {
         accumulatedWants = 
-          (accumulatedWants + budgetYear.monthlyWants * 12 * this.wantsInvestmentPercentage) * 
+          (accumulatedWants + budgetYear.monthlyWants * 12) * 
           (1 + this.assumptions.investmentReturns);
       }
 
@@ -203,7 +207,7 @@ export class FinancialGoalCalculator {
   }
 }
 
-// Helper functions
+// Helper functions remain the same
 export const formatCurrency = (amount: number): string => {
   if (!isFinite(amount) || isNaN(amount)) return '₹0';
   

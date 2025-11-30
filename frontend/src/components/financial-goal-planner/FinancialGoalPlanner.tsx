@@ -13,11 +13,9 @@ const FinancialGoalPlanner: React.FC = () => {
     assumptions,
     startingSalary,
     goals,
-    wantsInvestmentPercentage,
     results,
     updateAssumption,
     setStartingSalary,
-    setWantsInvestmentPercentage,
     addGoal,
     updateGoal,
     deleteGoal,
@@ -31,7 +29,7 @@ const FinancialGoalPlanner: React.FC = () => {
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg p-6 text-white">
         <h2 className="text-3xl font-bold mb-2">Financial Goal Planning Calculator</h2>
         <p className="text-indigo-100">
-          Plan your financial future by setting goals and tracking your wealth accumulation over 30 years
+          Plan your financial future with 50-20-30 budget rule (50% Needs, 20% Wants, 30% Investments)
         </p>
       </div>
 
@@ -76,8 +74,6 @@ const FinancialGoalPlanner: React.FC = () => {
               onUpdate={updateAssumption}
               startingSalary={startingSalary}
               onSalaryUpdate={setStartingSalary}
-              wantsInvestmentPercentage={wantsInvestmentPercentage}
-              onWantsPercentageUpdate={setWantsInvestmentPercentage}
             />
           )}
 
@@ -102,7 +98,7 @@ const FinancialGoalPlanner: React.FC = () => {
 
       {/* Footer */}
       <div className="text-center text-sm text-gray-500 pt-4">
-        <p>Based on the Abhinav Srivastava Investment Calculator methodology</p>
+        <p>Based on the 50-20-30 budget rule and Abhinav Srivastava Financial Goal Planning methodology</p>
       </div>
     </div>
   );

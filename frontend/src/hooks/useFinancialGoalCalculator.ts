@@ -24,19 +24,18 @@ export const useFinancialGoalCalculator = () => {
     jobChangeIncrement: 0.3,
     inflation: 0.06,
     investmentReturns: 0.12,
+    jobChangeYears: [9, 14, 21, 27],
   });
 
   const [startingSalary, setStartingSalary] = useState<number>(600000);
   const [goals, setGoals] = useState<Goal[]>(defaultGoals);
-  const [wantsInvestmentPercentage, setWantsInvestmentPercentage] = useState<number>(0.5);
 
-  // Calculate results
+  // Calculate results (removed wantsInvestmentPercentage parameter)
   const results = useMemo<FinancialPlanResults>(() => {
     const calculator = new FinancialGoalCalculator(
       assumptions,
       startingSalary,
-      goals,
-      wantsInvestmentPercentage
+      goals
     );
 
     // Update goals with calculated values
@@ -46,9 +45,9 @@ export const useFinancialGoalCalculator = () => {
     }
 
     return calculator.calculateFinancialPlan();
-  }, [assumptions, startingSalary, goals, wantsInvestmentPercentage]);
+  }, [assumptions, startingSalary, goals]);
 
-  const updateAssumption = (field: keyof AssumptionInputs, value: number) => {
+  const updateAssumption = (field: keyof AssumptionInputs, value: number | number[]) => {
     setAssumptions(prev => ({ ...prev, [field]: value }));
   };
 
@@ -75,11 +74,9 @@ export const useFinancialGoalCalculator = () => {
     assumptions,
     startingSalary,
     goals,
-    wantsInvestmentPercentage,
     results,
     updateAssumption,
     setStartingSalary,
-    setWantsInvestmentPercentage,
     addGoal,
     updateGoal,
     deleteGoal,

@@ -45,3 +45,25 @@ export interface FinancialPlanResults {
   totalAccumulatedWealth: number;
   goalsAchievable: boolean;
 }
+
+export interface AssumptionInputs {
+  annualIncrement: number;
+  jobChangeIncrement: number;
+  inflation: number;
+  investmentReturns: number;
+  jobChangeYears: number[];  // NEW: Array of years when job changes occur
+}
+
+export interface BudgetYear {
+  year: number;
+  startingSalary: number;
+  jobChange: boolean;
+  increment: number;
+  endingSalary: number;
+  monthlyNeeds: number;
+  monthlyWants: number;
+  monthlyInvestments: number;
+  needsPercentage: number;
+  wantsPercentage: number;
+  investmentsPercentage: number;
+}
