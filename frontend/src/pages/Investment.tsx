@@ -1,35 +1,38 @@
 // src/pages/Investment.tsx
 
-import { useState } from 'react';
-import InvestmentPlanner from '../components/investment/InvestmentPlanner';
-import { FinancialGoalPlanner } from '../components/financial-goal-planner';
+import { useState } from "react";
+import InvestmentPlanner from "../components/investment/InvestmentPlanner";
+import { FinancialGoalPlanner } from "../components/financial-goal-planner";
 
-type CalculatorType = 'planner' | 'goal-planning' | 'retirement' | null;
+type CalculatorType = "planner" | "goal-planning" | "retirement" | null;
 
 const Investment = () => {
-  const [selectedCalculator, setSelectedCalculator] = useState<CalculatorType>(null);
+  const [selectedCalculator, setSelectedCalculator] =
+    useState<CalculatorType>(null);
 
   const calculators = [
     {
-      id: 'planner',
-      name: 'Investment Planner',
-      description: 'Calculate future value of your investments with yearly contribution increases',
-      icon: '💰',
-      color: 'blue',
+      id: "planner",
+      name: "Investment Planner",
+      description:
+        "Calculate future value of your investments with yearly contribution increases",
+      icon: "💰",
+      color: "blue",
     },
     {
-      id: 'goal-planning',
-      name: 'Financial Goal Planning',
-      description: 'Plan your financial goals with budget and cash flow projections over 30 years',
-      icon: '🎯',
-      color: 'purple',
+      id: "goal-planning",
+      name: "Financial Goal Planning",
+      description:
+        "Plan your financial goals with budget and cash flow projections over 30 years",
+      icon: "🎯",
+      color: "purple",
     },
     {
-      id: 'retirement',
-      name: 'Retirement Calculator',
-      description: 'Plan your retirement corpus and monthly expenses',
-      icon: '🏖️',
-      color: 'green',
+      id: "retirement",
+      name: "Retirement Calculator",
+      description: "Plan your retirement corpus and monthly expenses",
+      icon: "🏖️",
+      color: "green",
       comingSoon: true,
     },
   ];
@@ -39,8 +42,12 @@ const Investment = () => {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Investment Calculators</h1>
-          <p className="text-gray-600">Plan your investments and secure your financial future</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Investment Calculators
+          </h1>
+          <p className="text-gray-600">
+            Plan your investments and secure your financial future
+          </p>
         </div>
 
         {!selectedCalculator ? (
@@ -49,10 +56,15 @@ const Investment = () => {
             {calculators.map((calc) => (
               <button
                 key={calc.id}
-                onClick={() => !calc.comingSoon && setSelectedCalculator(calc.id as CalculatorType)}
+                onClick={() =>
+                  !calc.comingSoon &&
+                  setSelectedCalculator(calc.id as CalculatorType)
+                }
                 disabled={calc.comingSoon}
                 className={`bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow duration-300 text-left group relative ${
-                  calc.comingSoon ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                  calc.comingSoon
+                    ? "opacity-60 cursor-not-allowed"
+                    : "cursor-pointer"
                 }`}
               >
                 {calc.comingSoon && (
@@ -63,9 +75,11 @@ const Investment = () => {
                 <div className="flex items-start space-x-4">
                   <div className="text-5xl">{calc.icon}</div>
                   <div className="flex-1">
-                    <h3 className={`text-2xl font-bold text-gray-900 mb-2 ${
-                      !calc.comingSoon && 'group-hover:text-blue-600'
-                    } transition`}>
+                    <h3
+                      className={`text-2xl font-bold text-gray-900 mb-2 ${
+                        !calc.comingSoon && "group-hover:text-blue-600"
+                      } transition`}
+                    >
                       {calc.name}
                     </h3>
                     <p className="text-gray-600">{calc.description}</p>
@@ -117,8 +131,10 @@ const Investment = () => {
 
             {/* Calculator Content */}
             <div>
-              {selectedCalculator === 'planner' && <InvestmentPlanner />}
-              {selectedCalculator === 'goal-planning' && <FinancialGoalPlanner />}
+              {selectedCalculator === "planner" && <InvestmentPlanner />}
+              {selectedCalculator === "goal-planning" && (
+                <FinancialGoalPlanner />
+              )}
               {/* Add more calculators here as you build them */}
             </div>
           </div>
