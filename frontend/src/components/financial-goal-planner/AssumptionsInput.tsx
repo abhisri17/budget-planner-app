@@ -1,7 +1,7 @@
 // src/components/financial-goal-planner/AssumptionsInput.tsx
 
-import React, { useState } from 'react';
-import type { AssumptionInputs } from '../../types/financialGoal.types';
+import React, { useState } from "react";
+import type { AssumptionInputs } from "../../types/financialGoal.types";
 
 interface AssumptionsInputProps {
   assumptions: AssumptionInputs;
@@ -19,36 +19,40 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
   // REMOVED: wantsInvestmentPercentage and onWantsPercentageUpdate from destructuring
 }) => {
   const [jobChangeInput, setJobChangeInput] = useState(
-    assumptions.jobChangeYears.join(', ')
+    assumptions.jobChangeYears.join(", ")
   );
 
-  const handlePercentageChange = (field: keyof AssumptionInputs) => (
+  const handlePercentageChange =
+    (field: keyof AssumptionInputs) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = parseFloat(e.target.value);
+      if (!isNaN(value)) {
+        onUpdate(field, value / 100);
+      }
+    };
+
+  const handleJobChangeYearsChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const value = parseFloat(e.target.value);
-    if (!isNaN(value)) {
-      onUpdate(field, value / 100);
-    }
-  };
-
-  const handleJobChangeYearsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setJobChangeInput(value);
 
     // Parse comma-separated years
     const years = value
-      .split(',')
-      .map(y => parseInt(y.trim()))
-      .filter(y => !isNaN(y) && y > 0 && y <= 30)
+      .split(",")
+      .map((y) => parseInt(y.trim()))
+      .filter((y) => !isNaN(y) && y > 0 && y <= 30)
       .sort((a, b) => a - b);
 
-    onUpdate('jobChangeYears', years);
+    onUpdate("jobChangeYears", years);
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-xl font-bold text-gray-800 mb-6">Assumptions & Inputs</h3>
-      
+      <h3 className="text-xl font-bold text-gray-800 mb-6">
+        Assumptions & Inputs
+      </h3>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Annual Increment */}
         <div>
@@ -58,7 +62,7 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           <input
             type="number"
             value={(assumptions.annualIncrement * 100).toFixed(1)}
-            onChange={handlePercentageChange('annualIncrement')}
+            onChange={handlePercentageChange("annualIncrement")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             min="0"
             max="100"
@@ -74,7 +78,7 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           <input
             type="number"
             value={(assumptions.jobChangeIncrement * 100).toFixed(1)}
-            onChange={handlePercentageChange('jobChangeIncrement')}
+            onChange={handlePercentageChange("jobChangeIncrement")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             min="0"
             max="100"
@@ -90,7 +94,7 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           <input
             type="number"
             value={(assumptions.inflation * 100).toFixed(1)}
-            onChange={handlePercentageChange('inflation')}
+            onChange={handlePercentageChange("inflation")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             min="0"
             max="100"
@@ -106,7 +110,7 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           <input
             type="number"
             value={(assumptions.investmentReturns * 100).toFixed(1)}
-            onChange={handlePercentageChange('investmentReturns')}
+            onChange={handlePercentageChange("investmentReturns")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             min="0"
             max="100"
@@ -149,8 +153,10 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           <div className="mt-2">
             {assumptions.jobChangeYears.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-gray-600">Job changes in years:</span>
-                {assumptions.jobChangeYears.map(year => (
+                <span className="text-sm text-gray-600">
+                  Job changes in years:
+                </span>
+                {assumptions.jobChangeYears.map((year) => (
                   <span
                     key={year}
                     className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold"
@@ -167,7 +173,9 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
       </div>
 
       <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-semibold text-blue-900 mb-2">💡 Salary Allocation:</h4>
+        <h4 className="font-semibold text-blue-900 mb-2">
+          💡 Salary Allocation:
+        </h4>
         <div className="grid grid-cols-3 gap-4 text-center mb-4">
           <div className="p-3 bg-white rounded-lg">
             <p className="text-2xl font-bold text-green-600">50%</p>
@@ -183,10 +191,20 @@ export const AssumptionsInput: React.FC<AssumptionsInputProps> = ({
           </div>
         </div>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>• <strong>Annual Increment:</strong> Regular yearly salary increase</li>
-          <li>• <strong>Job Change Increment:</strong> Salary jump when switching jobs</li>
-          <li>• <strong>Job Change Years:</strong> Specify which years you plan to change jobs</li>
-          <li>• All salary allocations adjust automatically based on increment</li>
+          <li>
+            • <strong>Annual Increment:</strong> Regular yearly salary increase
+          </li>
+          <li>
+            • <strong>Job Change Increment:</strong> Salary jump when switching
+            jobs
+          </li>
+          <li>
+            • <strong>Job Change Years:</strong> Specify which years you plan to
+            change jobs
+          </li>
+          <li>
+            • All salary allocations adjust automatically based on increment
+          </li>
           <li>• 100% of wants amount is invested with returns</li>
         </ul>
       </div>
