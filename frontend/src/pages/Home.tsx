@@ -12,9 +12,9 @@ const Home = () => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <Link to="/budget-planner" className="block">
-          <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition">
+      <div className="grid md:grid-cols-3 gap-8">
+        <Link to="/budget-planner" className="block h-full">
+          <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition h-full">
             <div className="text-4xl mb-4">📊</div>
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Budget Planner</h2>
             <p className="text-gray-600">
@@ -23,12 +23,22 @@ const Home = () => {
           </div>
         </Link>
 
-        <Link to="/calculators" className="block">
-          <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition">
+        <Link to="/calculators" className="block h-full">
+          <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition h-full">
             <div className="text-4xl mb-4">🧮</div>
             <h2 className="text-2xl font-bold mb-2 text-gray-800">Financial Calculators</h2>
             <p className="text-gray-600">
               Access powerful calculators for SIP planning, EMI calculations, and more to make informed financial decisions.
+            </p>
+          </div>
+        </Link>
+
+        <Link to="/investment" className="block h-full">
+          <div className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition h-full">
+            <div className="text-4xl mb-4">💰</div>
+            <h2 className="text-2xl font-bold mb-2 text-gray-800">Investment Planner</h2>
+            <p className="text-gray-600">
+              Plan and track your investments with Excel integration. Monitor portfolio performance and achieve your wealth goals.
             </p>
           </div>
         </Link>
