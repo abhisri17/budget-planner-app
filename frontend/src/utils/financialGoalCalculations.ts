@@ -27,7 +27,7 @@ export class FinancialGoalCalculator {
   }
 
   /**
-   * Calculate future value with inflation
+   * Calculate future value with inflation for a specific year
    */
   public calculateGoalValue(amount: number, years: number): number {
     if (!amount || years <= 0) return 0;
@@ -35,7 +35,57 @@ export class FinancialGoalCalculator {
   }
 
   /**
-   * Update all goals with calculated values
+   * Get all occurrences of a goal (including recurring instances)
+   */
+  private getGoalOccurrences(goal: Goal): Array<{ year: number; amount: number }> {
+    const occurrences: Array<{ year: number; amount: number }> = [];
+    
+    if (!goal.isRecurring) {
+      // One-time goal
+      occurrences.push({
+        year: goal.years,
+        amount: this.calculateGoalValue(goal.amount, goal.years),
+      });
+    } else {
+      // Recurring goal
+      const interval = goal.recurringInterval || 1;
+      let currentYear = goal.years;
+      
+      while (currentYear <= this.planningYears) {
+        occurrences.push({
+          year: currentYear,
+          amount: this.calculateGoalValue(goal.amount, currentYear),
+        });
+        currentYear += interval;
+      }
+    }
+    
+    return occurrences;
+  }
+
+  /**
+   * Get all goals for a specific year (including recurring instances)
+   */
+  private getGoalsForYear(year: number): Array<{ goal: Goal; amount: number }> {
+    const goalsForYear: Array<{ goal: Goal; amount: number }> = [];
+    
+    this.goals.forEach(goal => {
+      const occurrences = this.getGoalOccurrences(goal);
+      const occurrence = occurrences.find(occ => occ.year === year);
+      
+      if (occurrence) {
+        goalsForYear.push({
+          goal,
+          amount: occurrence.amount,
+        });
+      }
+    });
+    
+    return goalsForYear;
+  }
+
+  /**
+   * Update all goals with calculated values (for initial year only)
    */
   public calculateGoalValues(goals: Goal[]): Goal[] {
     return goals.map(goal => ({
@@ -117,8 +167,7 @@ export class FinancialGoalCalculator {
   }
 
   /**
-   * Calculate Cash Flow with PROPER GOAL DEDUCTION
-   * 100% of wants invested, goals deducted from wealth
+   * Calculate Cash Flow with PROPER GOAL DEDUCTION and RECURRING GOALS support
    */
   public calculateCashFlow(budgetData: BudgetYear[]): CashFlowYear[] {
     const cashFlow: CashFlowYear[] = [];
@@ -134,11 +183,9 @@ export class FinancialGoalCalculator {
 
       // Step 2: Add contributions and apply investment returns
       if (year === 1) {
-        // Year 1: 100% of wants invested (not 50%)
         accumulatedWants = yearlyWantsContribution * (1 + this.assumptions.investmentReturns);
         accumulatedInvestments = yearlyInvestmentContribution * (1 + this.assumptions.investmentReturns);
       } else {
-        // Subsequent years: (Previous + New Contribution) * (1 + Returns)
         accumulatedWants = (accumulatedWants + yearlyWantsContribution) * (1 + this.assumptions.investmentReturns);
         accumulatedInvestments = (accumulatedInvestments + yearlyInvestmentContribution) * (1 + this.assumptions.investmentReturns);
       }
@@ -146,11 +193,10 @@ export class FinancialGoalCalculator {
       // Store values BEFORE goal withdrawal
       const wantsBeforeGoals = accumulatedWants;
       const investmentsBeforeGoals = accumulatedInvestments;
-      const totalWealthBeforeGoals = wantsBeforeGoals + investmentsBeforeGoals;
 
-      // Step 3: Calculate goals due this year
-      const goalsThisYear = this.goals.filter(g => g.years === year);
-      const totalGoalsAmount = goalsThisYear.reduce((sum, goal) => sum + goal.valueAtTime, 0);
+      // Step 3: Get all goals for this year (including recurring instances)
+      const goalsForYear = this.getGoalsForYear(year);
+      const totalGoalsAmount = goalsForYear.reduce((sum, g) => sum + g.amount, 0);
 
       // Step 4: Deduct goals from wealth (Wants first, then Investments)
       let remainingGoalAmount = totalGoalsAmount;
@@ -160,12 +206,10 @@ export class FinancialGoalCalculator {
       if (remainingGoalAmount > 0) {
         // First, try to deduct from Wants
         if (accumulatedWants >= remainingGoalAmount) {
-          // Wants can cover it all
           amountFromWants = remainingGoalAmount;
           accumulatedWants -= remainingGoalAmount;
           remainingGoalAmount = 0;
         } else {
-          // Use all Wants, then take from Investments
           amountFromWants = accumulatedWants;
           remainingGoalAmount -= accumulatedWants;
           accumulatedWants = 0;
@@ -176,10 +220,8 @@ export class FinancialGoalCalculator {
             accumulatedInvestments -= remainingGoalAmount;
             remainingGoalAmount = 0;
           } else {
-            // Not enough wealth (shortfall)
             amountFromInvestments = accumulatedInvestments;
             accumulatedInvestments = 0;
-            // remainingGoalAmount > 0 means shortfall
           }
         }
       }
@@ -189,8 +231,8 @@ export class FinancialGoalCalculator {
       // Step 5: Store the cash flow data
       cashFlow.push({
         year,
-        wantsAmount: accumulatedWants, // AFTER deduction
-        investmentAmount: accumulatedInvestments, // AFTER deduction
+        wantsAmount: accumulatedWants,
+        investmentAmount: accumulatedInvestments,
         amountNeededFromWant: totalGoalsAmount,
         amountNeededFromInvestment: amountFromInvestments,
         canMeetGoals,
@@ -200,8 +242,6 @@ export class FinancialGoalCalculator {
         amountFromWants,
         amountFromInvestments,
       });
-
-      // Next year will use the REDUCED balances (after goal withdrawal)
     }
 
     return cashFlow;
@@ -217,7 +257,13 @@ export class FinancialGoalCalculator {
     const lastYear = cashFlowData[cashFlowData.length - 1];
     const totalAccumulatedWealth = lastYear.wantsAmount + lastYear.investmentAmount;
     
-    const totalGoalsValue = this.goals.reduce((sum, goal) => sum + goal.valueAtTime, 0);
+    // Calculate total goals value including all recurring instances
+    let totalGoalsValue = 0;
+    this.goals.forEach(goal => {
+      const occurrences = this.getGoalOccurrences(goal);
+      totalGoalsValue += occurrences.reduce((sum, occ) => sum + occ.amount, 0);
+    });
+    
     const goalsAchievable = totalAccumulatedWealth >= totalGoalsValue;
 
     return {
@@ -227,9 +273,16 @@ export class FinancialGoalCalculator {
       goalsAchievable,
     };
   }
+
+  /**
+   * Get goal occurrences for display (public method)
+   */
+  public getGoalOccurrencesForYear(year: number): Array<{ goal: Goal; amount: number }> {
+    return this.getGoalsForYear(year);
+  }
 }
 
-// Helper functions
+// Helper functions remain the same
 export const formatCurrency = (amount: number): string => {
   if (!isFinite(amount) || isNaN(amount)) return '₹0';
   

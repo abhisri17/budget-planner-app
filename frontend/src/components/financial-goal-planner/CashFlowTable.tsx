@@ -1,8 +1,9 @@
 // src/components/financial-goal-planner/CashFlowTable.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { CashFlowYear, Goal } from '../../types/financialGoal.types';
 import { formatCurrency, formatCrores } from '../../utils/financialGoalCalculations';
+import { FinancialGoalCalculator } from '../../utils/financialGoalCalculations';
 
 interface CashFlowTableProps {
   cashFlowData: CashFlowYear[];
@@ -14,11 +15,41 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
   
   const displayData = showAllYears ? cashFlowData : cashFlowData.slice(0, 10);
 
-  const goalsByYear = goals.reduce((acc, goal) => {
-    if (!acc[goal.years]) acc[goal.years] = [];
-    acc[goal.years].push(goal);
-    return acc;
-  }, {} as Record<number, Goal[]>);
+  // Create a map of goal occurrences by year
+  const goalsByYear = useMemo(() => {
+    const map: Record<number, Array<{ goal: Goal; amount: number }>> = {};
+    
+    goals.forEach(goal => {
+      if (!goal.isRecurring) {
+        // One-time goal
+        if (!map[goal.years]) map[goal.years] = [];
+        map[goal.years].push({
+          goal,
+          amount: goal.valueAtTime,
+        });
+      } else {
+        // Recurring goal
+        const interval = goal.recurringInterval || 1;
+        let currentYear = goal.years;
+        
+        while (currentYear <= 30) {
+          if (!map[currentYear]) map[currentYear] = [];
+          
+          // Calculate inflation-adjusted value for this occurrence
+          const amount = goal.amount * Math.pow(1.06, currentYear);
+          
+          map[currentYear].push({
+            goal,
+            amount,
+          });
+          
+          currentYear += interval;
+        }
+      }
+    });
+    
+    return map;
+  }, [goals]);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -53,24 +84,24 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
                 >
                   <td className="py-3 px-2 font-medium">{yearData.year}</td>
                   
-                  {/* Wants Before Goals */}
                   <td className="text-right py-3 px-2 text-purple-600">
                     {formatCurrency(yearData.wantsBeforeGoals || 0)}
                   </td>
                   
-                  {/* Investments Before Goals */}
                   <td className="text-right py-3 px-2 text-blue-600">
                     {formatCurrency(yearData.investmentsBeforeGoals || 0)}
                   </td>
                   
-                  {/* Goals This Year */}
                   <td className="py-3 px-2">
                     {hasGoals ? (
                       <div className="text-xs space-y-1">
-                        {goalsThisYear.map(goal => (
-                          <div key={goal.id} className="flex items-center">
+                        {goalsThisYear.map((g, idx) => (
+                          <div key={idx} className="flex items-center">
                             <span className="inline-block w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                            <span className="font-medium">{goal.name}</span>
+                            <span className="font-medium">{g.goal.name}</span>
+                            {g.goal.isRecurring && (
+                              <span className="ml-1 text-blue-600">🔄</span>
+                            )}
                           </div>
                         ))}
                         <div className="font-semibold text-red-600 mt-1">
@@ -82,7 +113,6 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
                     )}
                   </td>
                   
-                  {/* Amount From Wants */}
                   <td className="text-right py-3 px-2">
                     {(yearData.amountFromWants || 0) > 0 ? (
                       <span className="text-red-600 font-semibold">
@@ -93,7 +123,6 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
                     )}
                   </td>
                   
-                  {/* Amount From Investments */}
                   <td className="text-right py-3 px-2">
                     {(yearData.amountFromInvestments || 0) > 0 ? (
                       <span className="text-red-600 font-semibold">
@@ -104,17 +133,14 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
                     )}
                   </td>
                   
-                  {/* Wants After Goals */}
                   <td className="text-right py-3 px-2 font-bold text-purple-600">
                     {formatCurrency(yearData.wantsAmount)}
                   </td>
                   
-                  {/* Investments After Goals */}
                   <td className="text-right py-3 px-2 font-bold text-blue-600">
                     {formatCurrency(yearData.investmentAmount)}
                   </td>
                   
-                  {/* Status */}
                   <td className="text-center py-3 px-2">
                     {hasGoals && (
                       yearData.canMeetGoals ? (
@@ -146,7 +172,6 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
         </div>
       )}
 
-      {/* Summary Cards */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-purple-50 rounded-lg">
           <p className="text-sm text-gray-600">Final Wants Balance</p>
@@ -171,11 +196,10 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({ cashFlowData, goal
         </div>
       </div>
 
-      <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400">
-        <p className="text-sm text-yellow-800">
-          <strong>💡 How it works:</strong> Each year, wealth grows with new contributions (20% wants + 30% investments) 
-          and 12% returns. When goals are due, amounts are withdrawn first from Wants, then from Investments. 
-          The reduced balance carries forward to the next year. 100% of wants budget is invested.
+      <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400">
+        <p className="text-sm text-blue-800">
+          <strong>💡 Recurring Goals:</strong> Goals marked with 🔄 repeat at specified intervals. 
+          Each occurrence is inflation-adjusted and deducted from your wealth when due.
         </p>
       </div>
     </div>

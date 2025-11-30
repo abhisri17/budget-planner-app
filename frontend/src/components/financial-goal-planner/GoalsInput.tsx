@@ -23,12 +23,21 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
     amount: 0,
     years: 1,
     category: 'medium' as 'short' | 'medium' | 'long',
+    isRecurring: false,
+    recurringInterval: 1,
   });
 
   const handleAddGoal = () => {
     if (newGoal.name && newGoal.amount > 0) {
       onAddGoal(newGoal);
-      setNewGoal({ name: '', amount: 0, years: 1, category: 'medium' });
+      setNewGoal({ 
+        name: '', 
+        amount: 0, 
+        years: 1, 
+        category: 'medium',
+        isRecurring: false,
+        recurringInterval: 1,
+      });
       setShowAddForm(false);
     }
   };
@@ -60,14 +69,17 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
       {/* Add Goal Form */}
       {showAddForm && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="text"
-              placeholder="Goal Name"
-              value={newGoal.name}
-              onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <input
+                type="text"
+                placeholder="Goal Name"
+                value={newGoal.name}
+                onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            
             <input
               type="number"
               placeholder="Amount"
@@ -75,14 +87,16 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
               onChange={(e) => setNewGoal({ ...newGoal, amount: parseFloat(e.target.value) || 0 })}
               className="px-4 py-2 border border-gray-300 rounded-lg"
             />
+            
             <input
               type="number"
-              placeholder="Years"
+              placeholder="Starting in Year"
               value={newGoal.years}
               onChange={(e) => setNewGoal({ ...newGoal, years: parseInt(e.target.value) || 1 })}
               className="px-4 py-2 border border-gray-300 rounded-lg"
               min="1"
             />
+            
             <select
               value={newGoal.category}
               onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value as any })}
@@ -92,7 +106,34 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
               <option value="medium">Medium Term</option>
               <option value="long">Long Term</option>
             </select>
+
+            <div className="flex items-center space-x-4 px-4 py-2 border border-gray-300 rounded-lg bg-white">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newGoal.isRecurring}
+                  onChange={(e) => setNewGoal({ ...newGoal, isRecurring: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">Recurring</span>
+              </label>
+              
+              {newGoal.isRecurring && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Every</span>
+                  <input
+                    type="number"
+                    value={newGoal.recurringInterval}
+                    onChange={(e) => setNewGoal({ ...newGoal, recurringInterval: parseInt(e.target.value) || 1 })}
+                    className="w-16 px-2 py-1 border border-gray-300 rounded"
+                    min="1"
+                  />
+                  <span className="text-sm text-gray-600">year(s)</span>
+                </div>
+              )}
+            </div>
           </div>
+          
           <button
             onClick={handleAddGoal}
             className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -115,31 +156,72 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
                   key={goal.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                 >
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <input
-                      type="text"
-                      value={goal.name}
-                      onChange={(e) => onUpdateGoal(goal.id, { name: e.target.value })}
-                      className="px-3 py-1 border border-gray-300 rounded"
-                    />
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+                    {/* Goal Name */}
+                    <div className="md:col-span-2">
+                      <input
+                        type="text"
+                        value={goal.name}
+                        onChange={(e) => onUpdateGoal(goal.id, { name: e.target.value })}
+                        className="w-full px-3 py-1 border border-gray-300 rounded"
+                      />
+                    </div>
+                    
+                    {/* Amount */}
                     <input
                       type="number"
                       value={goal.amount}
                       onChange={(e) => onUpdateGoal(goal.id, { amount: parseFloat(e.target.value) })}
                       className="px-3 py-1 border border-gray-300 rounded"
+                      placeholder="Amount"
                     />
+                    
+                    {/* Starting Year */}
                     <input
                       type="number"
                       value={goal.years}
                       onChange={(e) => onUpdateGoal(goal.id, { years: parseInt(e.target.value) })}
                       className="px-3 py-1 border border-gray-300 rounded"
                       min="1"
+                      placeholder="Year"
                     />
+                    
+                    {/* Recurring Controls */}
+                    <div className="flex items-center space-x-2">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={goal.isRecurring}
+                          onChange={(e) => onUpdateGoal(goal.id, { isRecurring: e.target.checked })}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-xs font-medium text-gray-700">Repeat</span>
+                      </label>
+                      
+                      {goal.isRecurring && (
+                        <input
+                          type="number"
+                          value={goal.recurringInterval || 1}
+                          onChange={(e) => onUpdateGoal(goal.id, { recurringInterval: parseInt(e.target.value) || 1 })}
+                          className="w-12 px-2 py-1 border border-gray-300 rounded text-xs"
+                          min="1"
+                          title="Repeat every X years"
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Future Value */}
                     <div className="text-sm">
-                      <span className="text-gray-600">Future Value: </span>
+                      <span className="text-gray-600">Value: </span>
                       <span className="font-semibold">{formatCurrency(goal.valueAtTime)}</span>
+                      {goal.isRecurring && (
+                        <span className="ml-1 text-xs text-blue-600">
+                          (every {goal.recurringInterval || 1}y)
+                        </span>
+                      )}
                     </div>
                   </div>
+                  
                   <button
                     onClick={() => onDeleteGoal(goal.id)}
                     className="ml-4 px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"

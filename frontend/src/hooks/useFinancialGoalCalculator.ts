@@ -5,16 +5,16 @@ import type { AssumptionInputs, Goal, FinancialPlanResults } from '../types/fina
 import { FinancialGoalCalculator } from '../utils/financialGoalCalculations';
 
 const defaultGoals: Goal[] = [
-  { id: '1', name: 'Emergency Fund', amount: 300000, years: 1, valueAtTime: 0, category: 'short' },
-  { id: '2', name: 'Vacation every year', amount: 50000, years: 1, valueAtTime: 0, category: 'short' },
-  { id: '3', name: 'Mobile Phone', amount: 50000, years: 3, valueAtTime: 0, category: 'short' },
-  { id: '4', name: 'International Vacation', amount: 250000, years: 3, valueAtTime: 0, category: 'medium' },
-  { id: '5', name: 'Education', amount: 3000000, years: 6, valueAtTime: 0, category: 'medium' },
-  { id: '6', name: 'Marriage', amount: 1000000, years: 4, valueAtTime: 0, category: 'medium' },
-  { id: '7', name: 'Car', amount: 500000, years: 3, valueAtTime: 0, category: 'medium' },
-  { id: '8', name: 'Home downpayment', amount: 3000000, years: 10, valueAtTime: 0, category: 'long' },
-  { id: '9', name: 'Kids education', amount: 2500000, years: 25, valueAtTime: 0, category: 'long' },
-  { id: '10', name: 'Retirement', amount: 10000000, years: 30, valueAtTime: 0, category: 'long' },
+  { id: '1', name: 'Emergency Fund', amount: 300000, years: 1, valueAtTime: 0, category: 'short', isRecurring: false },
+  { id: '2', name: 'Vacation every year', amount: 50000, years: 1, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 1 }, // RECURRING ANNUALLY
+  { id: '3', name: 'Mobile Phone', amount: 50000, years: 3, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 3 }, // RECURRING EVERY 3 YEARS
+  { id: '4', name: 'International Vacation', amount: 250000, years: 3, valueAtTime: 0, category: 'medium', isRecurring: false },
+  { id: '5', name: 'Education', amount: 3000000, years: 6, valueAtTime: 0, category: 'medium', isRecurring: false },
+  { id: '6', name: 'Marriage', amount: 1000000, years: 4, valueAtTime: 0, category: 'medium', isRecurring: false },
+  { id: '7', name: 'Car', amount: 500000, years: 3, valueAtTime: 0, category: 'medium', isRecurring: false },
+  { id: '8', name: 'Home downpayment', amount: 3000000, years: 10, valueAtTime: 0, category: 'long', isRecurring: false },
+  { id: '9', name: 'Kids education', amount: 2500000, years: 25, valueAtTime: 0, category: 'long', isRecurring: false },
+  { id: '10', name: 'Retirement', amount: 10000000, years: 30, valueAtTime: 0, category: 'long', isRecurring: false },
 ];
 
 export const useFinancialGoalCalculator = () => {
@@ -34,7 +34,6 @@ export const useFinancialGoalCalculator = () => {
       assumptions,
       startingSalary,
       goals
-      // No 50% parameter - investing 100% of wants
     );
 
     const updatedGoals = calculator.calculateGoalValues(goals);
