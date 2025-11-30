@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Budget, Expense } from '../types';
 import BudgetCard from '../components/budget/BudgetCard';
 import ExpenseTracker from '../components/budget/ExpenseTracker';
+import InvestmentInfoModal from '../components/budget/InvestmentInfoModal';
 
 const BudgetPlanner = () => {
   const [budgets, setBudgets] = useState<Budget[]>([
@@ -116,25 +117,33 @@ const BudgetPlanner = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Budget Planner</h1>
-          <p className="text-gray-600">Track your expenses and manage your budgets effectively</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Budget Planner
+          </h1>
+          <p className="text-gray-600">
+            Track your expenses and manage your budgets effectively
+          </p>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 relative">
             <div className="flex justify-between items-start mb-1">
-              <h3 className="text-sm font-medium text-gray-600">Total Budget</h3>
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Budget
+              </h3>
             </div>
-            
+
             {isEditingSummary ? (
               <div className="space-y-3">
                 <input
                   type="number"
                   defaultValue={totalBudget}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveTotalBudget((e.target as HTMLInputElement).value);
+                    if (e.key === "Enter") {
+                      handleSaveTotalBudget(
+                        (e.target as HTMLInputElement).value
+                      );
                     }
                   }}
                   className="w-full px-3 py-2 text-2xl font-bold border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -143,7 +152,8 @@ const BudgetPlanner = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={(e) => {
-                      const input = e.currentTarget.parentElement?.previousElementSibling as HTMLInputElement;
+                      const input = e.currentTarget.parentElement
+                        ?.previousElementSibling as HTMLInputElement;
                       handleSaveTotalBudget(input.value);
                     }}
                     className="flex-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -158,12 +168,16 @@ const BudgetPlanner = () => {
                   </button>
                 </div>
                 {manualTotalBudget !== null && (
-                  <p className="text-xs text-gray-500">Auto-calculated: ₹{calculatedTotalBudget.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">
+                    Auto-calculated: ₹{calculatedTotalBudget.toLocaleString()}
+                  </p>
                 )}
               </div>
             ) : (
               <>
-                <p className="text-3xl font-bold text-gray-900">₹{totalBudget.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  ₹{totalBudget.toLocaleString()}
+                </p>
                 {manualTotalBudget !== null && (
                   <p className="text-xs text-gray-500 mt-1">(Custom value)</p>
                 )}
@@ -173,14 +187,23 @@ const BudgetPlanner = () => {
 
           {/* Total Spent */}
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Spent</h3>
-            <p className="text-3xl font-bold text-gray-900">₹{totalSpent.toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">
+              Total Spent
+            </h3>
+            <p className="text-3xl font-bold text-gray-900">
+              ₹{totalSpent.toLocaleString()}
+            </p>
           </div>
 
           {/* Remaining */}
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Remaining</h3>
-            <p className="text-3xl font-bold text-gray-900">₹{remainingBudget.toLocaleString()}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-sm font-medium text-gray-600">Remaining</h3>
+              <InvestmentInfoModal amount={remainingBudget} />
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              ₹{remainingBudget.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-500 mt-1">
               {((remainingBudget / totalBudget) * 100).toFixed(1)}% remaining
             </p>
@@ -189,20 +212,26 @@ const BudgetPlanner = () => {
 
         {/* Add Budget Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Add New Budget</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Add New Budget
+          </h2>
           <div className="flex flex-col sm:flex-row gap-4">
             <input
               type="text"
               placeholder="Category (e.g., Food, Transport)"
               value={newBudget.category}
-              onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
+              onChange={(e) =>
+                setNewBudget({ ...newBudget, category: e.target.value })
+              }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="number"
               placeholder="Amount"
               value={newBudget.amount}
-              onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })}
+              onChange={(e) =>
+                setNewBudget({ ...newBudget, amount: e.target.value })
+              }
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
@@ -216,12 +245,14 @@ const BudgetPlanner = () => {
 
         {/* Budget Cards Grid */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Budgets</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Your Budgets
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {budgets.map((budget) => (
-              <BudgetCard 
-                key={budget.id} 
-                budget={budget} 
+              <BudgetCard
+                key={budget.id}
+                budget={budget}
                 onDelete={handleDeleteBudget}
                 onUpdate={handleUpdateBudget}
               />
