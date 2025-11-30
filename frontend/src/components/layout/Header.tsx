@@ -13,6 +13,7 @@ const Header = () => {
     { label: 'Home', path: '/' },
     { label: 'Budget Planner', path: '/budget-planner' },
     { label: 'Calculators', path: '/calculators' },
+    { label: 'Investment', path: '/investment' },
   ];
 
   return (

@@ -3,6 +3,7 @@ import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import BudgetPlanner from './pages/BudgetPlanner';
 import Calculators from './pages/Calculators';
+import Investment from './pages/Investment';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/budget-planner" element={<BudgetPlanner />} />
           <Route path="/calculators" element={<Calculators />} />
+          <Route path="/investment" element={<Investment />} />
         </Routes>
       </Layout>
     </Router>
