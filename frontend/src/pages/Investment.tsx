@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import InvestmentPlanner from '../components/investment/InvestmentPlanner';
+import { FinancialGoalPlanner } from '../components/financial-goal-planner';
 
-type CalculatorType = 'planner' | 'retirement' | 'goal' | null;
+type CalculatorType = 'planner' | 'goal-planning' | 'retirement' | null;
 
 const Investment = () => {
   const [selectedCalculator, setSelectedCalculator] = useState<CalculatorType>(null);
@@ -17,18 +18,17 @@ const Investment = () => {
       color: 'blue',
     },
     {
+      id: 'goal-planning',
+      name: 'Financial Goal Planning',
+      description: 'Plan your financial goals with budget and cash flow projections over 30 years',
+      icon: '🎯',
+      color: 'purple',
+    },
+    {
       id: 'retirement',
       name: 'Retirement Calculator',
       description: 'Plan your retirement corpus and monthly expenses',
       icon: '🏖️',
-      color: 'purple',
-      comingSoon: true,
-    },
-    {
-      id: 'goal',
-      name: 'Goal-Based Investment',
-      description: 'Calculate investments needed to reach your financial goals',
-      icon: '🎯',
       color: 'green',
       comingSoon: true,
     },
@@ -118,6 +118,7 @@ const Investment = () => {
             {/* Calculator Content */}
             <div>
               {selectedCalculator === 'planner' && <InvestmentPlanner />}
+              {selectedCalculator === 'goal-planning' && <FinancialGoalPlanner />}
               {/* Add more calculators here as you build them */}
             </div>
           </div>
