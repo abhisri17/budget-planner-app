@@ -6,7 +6,7 @@ import type {
   BudgetYear,
   CashFlowYear,
   FinancialPlanResults,
-} from '../types/financialGoal.types';
+} from "../types/financialGoal.types";
 
 export class FinancialGoalCalculator {
   private assumptions: AssumptionInputs;
@@ -37,9 +37,11 @@ export class FinancialGoalCalculator {
   /**
    * Get all occurrences of a goal (including recurring instances)
    */
-  private getGoalOccurrences(goal: Goal): Array<{ year: number; amount: number }> {
+  private getGoalOccurrences(
+    goal: Goal
+  ): Array<{ year: number; amount: number }> {
     const occurrences: Array<{ year: number; amount: number }> = [];
-    
+
     if (!goal.isRecurring) {
       // One-time goal
       occurrences.push({
@@ -50,7 +52,7 @@ export class FinancialGoalCalculator {
       // Recurring goal
       const interval = goal.recurringInterval || 1;
       let currentYear = goal.years;
-      
+
       while (currentYear <= this.planningYears) {
         occurrences.push({
           year: currentYear,
@@ -59,7 +61,7 @@ export class FinancialGoalCalculator {
         currentYear += interval;
       }
     }
-    
+
     return occurrences;
   }
 
@@ -68,11 +70,11 @@ export class FinancialGoalCalculator {
    */
   private getGoalsForYear(year: number): Array<{ goal: Goal; amount: number }> {
     const goalsForYear: Array<{ goal: Goal; amount: number }> = [];
-    
-    this.goals.forEach(goal => {
+
+    this.goals.forEach((goal) => {
       const occurrences = this.getGoalOccurrences(goal);
-      const occurrence = occurrences.find(occ => occ.year === year);
-      
+      const occurrence = occurrences.find((occ) => occ.year === year);
+
       if (occurrence) {
         goalsForYear.push({
           goal,
@@ -80,7 +82,7 @@ export class FinancialGoalCalculator {
         });
       }
     });
-    
+
     return goalsForYear;
   }
 
@@ -88,7 +90,7 @@ export class FinancialGoalCalculator {
    * Update all goals with calculated values (for initial year only)
    */
   public calculateGoalValues(goals: Goal[]): Goal[] {
-    return goals.map(goal => ({
+    return goals.map((goal) => ({
       ...goal,
       valueAtTime: this.calculateGoalValue(goal.amount, goal.years),
     }));
@@ -106,7 +108,7 @@ export class FinancialGoalCalculator {
    */
   public calculateBudget(): BudgetYear[] {
     const budget: BudgetYear[] = [];
-    
+
     const initialNeeds = 0.5;
     const initialWants = 0.2;
     const initialInvestments = 0.3;
@@ -121,12 +123,13 @@ export class FinancialGoalCalculator {
         startingSalary = budget[year - 2].endingSalary;
       }
 
-      const incrementRate = jobChange 
-        ? this.assumptions.jobChangeIncrement 
+      const incrementRate = jobChange
+        ? this.assumptions.jobChangeIncrement
         : this.assumptions.annualIncrement;
-      
+
       const increment = year === 1 ? 0 : incrementRate * startingSalary;
-      const endingSalary = year === 1 ? this.startingSalary : startingSalary + increment;
+      const endingSalary =
+        year === 1 ? this.startingSalary : startingSalary + increment;
 
       let monthlyNeeds: number;
       let monthlyWants: number;
@@ -140,13 +143,17 @@ export class FinancialGoalCalculator {
         const prevYear = budget[year - 2];
         monthlyNeeds = prevYear.monthlyNeeds + (increment * initialNeeds) / 12;
         monthlyWants = prevYear.monthlyWants + (increment * initialWants) / 12;
-        monthlyInvestments = prevYear.monthlyInvestments + (increment * initialInvestments) / 12;
+        monthlyInvestments =
+          prevYear.monthlyInvestments + (increment * initialInvestments) / 12;
       }
 
       const monthlySalary = endingSalary / 12;
-      const needsPercentage = monthlySalary > 0 ? monthlyNeeds / monthlySalary : 0;
-      const wantsPercentage = monthlySalary > 0 ? monthlyWants / monthlySalary : 0;
-      const investmentsPercentage = monthlySalary > 0 ? monthlyInvestments / monthlySalary : 0;
+      const needsPercentage =
+        monthlySalary > 0 ? monthlyNeeds / monthlySalary : 0;
+      const wantsPercentage =
+        monthlySalary > 0 ? monthlyWants / monthlySalary : 0;
+      const investmentsPercentage =
+        monthlySalary > 0 ? monthlyInvestments / monthlySalary : 0;
 
       budget.push({
         year,
@@ -183,11 +190,18 @@ export class FinancialGoalCalculator {
 
       // Step 2: Add contributions and apply investment returns
       if (year === 1) {
-        accumulatedWants = yearlyWantsContribution * (1 + this.assumptions.investmentReturns);
-        accumulatedInvestments = yearlyInvestmentContribution * (1 + this.assumptions.investmentReturns);
+        accumulatedWants =
+          yearlyWantsContribution * (1 + this.assumptions.investmentReturns);
+        accumulatedInvestments =
+          yearlyInvestmentContribution *
+          (1 + this.assumptions.investmentReturns);
       } else {
-        accumulatedWants = (accumulatedWants + yearlyWantsContribution) * (1 + this.assumptions.investmentReturns);
-        accumulatedInvestments = (accumulatedInvestments + yearlyInvestmentContribution) * (1 + this.assumptions.investmentReturns);
+        accumulatedWants =
+          (accumulatedWants + yearlyWantsContribution) *
+          (1 + this.assumptions.investmentReturns);
+        accumulatedInvestments =
+          (accumulatedInvestments + yearlyInvestmentContribution) *
+          (1 + this.assumptions.investmentReturns);
       }
 
       // Store values BEFORE goal withdrawal
@@ -196,7 +210,10 @@ export class FinancialGoalCalculator {
 
       // Step 3: Get all goals for this year (including recurring instances)
       const goalsForYear = this.getGoalsForYear(year);
-      const totalGoalsAmount = goalsForYear.reduce((sum, g) => sum + g.amount, 0);
+      const totalGoalsAmount = goalsForYear.reduce(
+        (sum, g) => sum + g.amount,
+        0
+      );
 
       // Step 4: Deduct goals from wealth (Wants first, then Investments)
       let remainingGoalAmount = totalGoalsAmount;
@@ -253,17 +270,18 @@ export class FinancialGoalCalculator {
   public calculateFinancialPlan(): FinancialPlanResults {
     const budgetData = this.calculateBudget();
     const cashFlowData = this.calculateCashFlow(budgetData);
-    
+
     const lastYear = cashFlowData[cashFlowData.length - 1];
-    const totalAccumulatedWealth = lastYear.wantsAmount + lastYear.investmentAmount;
-    
+    const totalAccumulatedWealth =
+      lastYear.wantsAmount + lastYear.investmentAmount;
+
     // Calculate total goals value including all recurring instances
     let totalGoalsValue = 0;
-    this.goals.forEach(goal => {
+    this.goals.forEach((goal) => {
       const occurrences = this.getGoalOccurrences(goal);
       totalGoalsValue += occurrences.reduce((sum, occ) => sum + occ.amount, 0);
     });
-    
+
     const goalsAchievable = totalAccumulatedWealth >= totalGoalsValue;
 
     return {
@@ -277,33 +295,35 @@ export class FinancialGoalCalculator {
   /**
    * Get goal occurrences for display (public method)
    */
-  public getGoalOccurrencesForYear(year: number): Array<{ goal: Goal; amount: number }> {
+  public getGoalOccurrencesForYear(
+    year: number
+  ): Array<{ goal: Goal; amount: number }> {
     return this.getGoalsForYear(year);
   }
 }
 
 // Helper functions remain the same
 export const formatCurrency = (amount: number): string => {
-  if (!isFinite(amount) || isNaN(amount)) return '₹0';
-  
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  if (!isFinite(amount) || isNaN(amount)) return "₹0";
+
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
     maximumFractionDigits: 0,
   }).format(amount);
 };
 
 export const formatPercentage = (value: number): string => {
-  if (!isFinite(value) || isNaN(value)) return '0%';
+  if (!isFinite(value) || isNaN(value)) return "0%";
   return `${(value * 100).toFixed(1)}%`;
 };
 
 export const formatLakhs = (amount: number): string => {
-  if (!isFinite(amount) || isNaN(amount)) return '₹0 L';
+  if (!isFinite(amount) || isNaN(amount)) return "₹0 L";
   return `₹${(amount / 100000).toFixed(2)} L`;
 };
 
 export const formatCrores = (amount: number): string => {
-  if (!isFinite(amount) || isNaN(amount)) return '₹0 Cr';
+  if (!isFinite(amount) || isNaN(amount)) return "₹0 Cr";
   return `₹${(amount / 10000000).toFixed(2)} Cr`;
 };
