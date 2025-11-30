@@ -6,8 +6,8 @@ import { FinancialGoalCalculator } from '../utils/financialGoalCalculations';
 
 const defaultGoals: Goal[] = [
   { id: '1', name: 'Emergency Fund', amount: 300000, years: 1, valueAtTime: 0, category: 'short', isRecurring: false },
-  { id: '2', name: 'Vacation every year', amount: 50000, years: 1, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 1 }, // RECURRING ANNUALLY
-  { id: '3', name: 'Mobile Phone', amount: 50000, years: 3, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 3 }, // RECURRING EVERY 3 YEARS
+  { id: '2', name: 'Vacation every year', amount: 50000, years: 1, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 1 },
+  { id: '3', name: 'Mobile Phone', amount: 50000, years: 3, valueAtTime: 0, category: 'short', isRecurring: true, recurringInterval: 3 },
   { id: '4', name: 'International Vacation', amount: 250000, years: 3, valueAtTime: 0, category: 'medium', isRecurring: false },
   { id: '5', name: 'Education', amount: 3000000, years: 6, valueAtTime: 0, category: 'medium', isRecurring: false },
   { id: '6', name: 'Marriage', amount: 1000000, years: 4, valueAtTime: 0, category: 'medium', isRecurring: false },
@@ -19,14 +19,15 @@ const defaultGoals: Goal[] = [
 
 export const useFinancialGoalCalculator = () => {
   const [assumptions, setAssumptions] = useState<AssumptionInputs>({
-    annualIncrement: 0.05,
-    jobChangeIncrement: 0.3,
-    inflation: 0.06,
-    investmentReturns: 0.12,
+    annualIncrement: 0.07,        // CHANGED: 5% → 7%
+    jobChangeIncrement: 0.3,      // UNCHANGED: 30%
+    inflation: 0.06,              // UNCHANGED: 6%
+    investmentReturns: 0.10,      // CHANGED: 12% → 10%
     jobChangeYears: [9, 14, 21, 27],
   });
 
-  const [startingSalary, setStartingSalary] = useState<number>(600000);
+  const [startingSalary, setStartingSalary] = useState<number>(1800000); // CHANGED: 600,000 → 1,800,000
+
   const [goals, setGoals] = useState<Goal[]>(defaultGoals);
 
   const results = useMemo<FinancialPlanResults>(() => {
