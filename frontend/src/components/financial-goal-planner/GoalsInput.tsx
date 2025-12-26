@@ -42,11 +42,11 @@ export const GoalsInput: React.FC<GoalsInputProps> = ({
     }
   };
 
-  const categoryColors = {
-    short: "bg-green-100 text-green-800",
-    medium: "bg-blue-100 text-blue-800",
-    long: "bg-purple-100 text-purple-800",
-  };
+  // const categoryColors = {
+  //   short: "bg-green-100 text-green-800",
+  //   medium: "bg-blue-100 text-blue-800",
+  //   long: "bg-purple-100 text-purple-800",
+  // };
 
   const groupedGoals = {
     short: goals.filter((g) => g.category === "short"),

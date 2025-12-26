@@ -6,7 +6,7 @@ import {
   formatCurrency,
   formatCrores,
 } from "../../utils/financialGoalCalculations";
-import { FinancialGoalCalculator } from "../../utils/financialGoalCalculations";
+// import { FinancialGoalCalculator } from "../../utils/financialGoalCalculations";
 
 interface CashFlowTableProps {
   cashFlowData: CashFlowYear[];
